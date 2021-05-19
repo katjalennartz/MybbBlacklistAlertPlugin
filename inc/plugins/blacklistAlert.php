@@ -649,7 +649,7 @@ function blacklistAlert_alert(){
     } else {
         //Alle anderen Charaktere
     	$get_meldung = $db->query("SELECT *, DATEDIFF(CURDATE(),FROM_UNIXTIME(dateline)) as diff FROM 
-        (SElECT uid, username, fid, tid, pid, dateline as dateline FROM ".TABLE_PREFIX."posts WHERE uid = ".$uid.") as up 
+        (SElECT uid, username, fid, tid, pid, dateline as dateline FROM ".TABLE_PREFIX."posts WHERE uid = ".$uid." AND visible != '-2') as up 
             INNER JOIN
         (SELECT fid FROM ".TABLE_PREFIX."forums WHERE concat(',',parentlist,',') LIKE '%,".$opt_bl_ingame.",%'".$archiv.") as fids
       ON fids.fid = up.fid
