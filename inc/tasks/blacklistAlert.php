@@ -73,6 +73,6 @@ function task_blacklistAlert($task)
     }
 
     //clean bl info
-  //  $db->query("UPDATE ".TABLE_PREFIX."users SET bl_info=1, bl_info_timestamp=0");
+    $db->query("UPDATE ".TABLE_PREFIX."users SET bl_info=1, bl_info_timestamp=0");
     add_task_log($task, "Blacklist - bl Info von allen Usern zurückgesetzt");
 }
