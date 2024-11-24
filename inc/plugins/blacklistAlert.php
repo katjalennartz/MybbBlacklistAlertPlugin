@@ -609,7 +609,7 @@ function blacklistAlert_alert()
 
       //Mehrfachcharaktere anzeigen ja/nein?
       if ($opt_bl_as == 0) { //Nein
-        $allechars = $db->query("SELECT uid,username FROM " . TABLE_PREFIX . "users WHERE uid = " . $this_user . " AND bl_info=1" . $ice . "");
+        $allechars = $db->query("SELECT uid,username FROM " . TABLE_PREFIX . "users WHERE uid = '" . $this_user . "' AND bl_info=1" . $ice . "");
 
         $query = $db->simple_select('users', 'away', "uid ='" . $this_user . "'", array('LIMIT' => 1));
         $abwesend = $db->fetch_field($query, 'away');
@@ -640,7 +640,8 @@ function blacklistAlert_alert()
 
         //Charakter in der Bewerbung?    
         if ($usergroup == $opt_bl_bewerbergruppe) {
-          $get_bewerbermeldung = $db->query("SELECT grp.username, grp.uid, grp.regdate, habenposts.dateline, tid, subject FROM (SELECT * FROM " . TABLE_PREFIX . "users WHERE usergroup = " . $opt_bl_bewerbergruppe . ") as grp left JOIN 
+          $get_bewerbermeldung = 
+          $db->query("SELECT grp.username, grp.uid, grp.regdate, habenposts.dateline, tid, subject FROM (SELECT * FROM " . TABLE_PREFIX . "users WHERE usergroup = '" . $opt_bl_bewerbergruppe . "') as grp left JOIN 
 (SELECT username,dateline,max(tid) tid,fid,uid, subject FROM " . TABLE_PREFIX . "threads thread
   INNER JOIN 
              (SELECT fid as fff FROM " . TABLE_PREFIX . "forums as f WHERE concat(',',parentlist,',') LIKE '%," . $opt_bl_bewerberfid . ",%') as fids
@@ -667,7 +668,7 @@ function blacklistAlert_alert()
         } else {
           //Alle anderen Charaktere
           $get_meldung = $db->query("SELECT *, DATEDIFF(CURDATE(),FROM_UNIXTIME(dateline)) as diff FROM 
-        (SElECT uid, username, fid, tid, pid, dateline as dateline FROM " . TABLE_PREFIX . "posts WHERE uid = " . $uid . " AND visible != '-2') as up 
+        (SElECT uid, username, fid, tid, pid, dateline as dateline FROM " . TABLE_PREFIX . "posts WHERE uid = '" . $uid . "' AND visible != '-2') as up 
             INNER JOIN
         (SELECT fid FROM " . TABLE_PREFIX . "forums WHERE concat(',',parentlist,',') LIKE '%," . $opt_bl_ingame . ",%'" . $archiv . ") as fids
       ON fids.fid = up.fid
@@ -699,7 +700,7 @@ function blacklistAlert_alert()
         if (isset($_GET['id'])) {
           $id = intval($_GET['id']);
         }
-        $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_info = '0', bl_info_timestamp = " . $today . " WHERE uid='" . $id . "'");
+        $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_info = '0', bl_info_timestamp = '" . $today . "' WHERE uid='" . $id . "'");
         redirect('index.php');
       }
 
@@ -707,7 +708,7 @@ function blacklistAlert_alert()
         ////get all chars  
         foreach ($array_uids as $iduser => $nameuser) {
           $hideid = $iduser;
-          $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_info = '0', bl_info_timestamp = " . $today . " WHERE uid='" . $hideid . "'");
+          $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_info = '0', bl_info_timestamp = '" . $today . "' WHERE uid='" . $hideid . "'");
         }
         redirect('index.php');
       }
@@ -817,15 +818,15 @@ function blacklistAlert_edit_profile_do()
     //Ja, alle raussuchen
     //speichern
     //für alle
-    $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "', bl_info=" . $blacklistAlert_info . " WHERE uid=" . $id . " OR as_uid=" . $id . "");
+    $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "', bl_info='" . $blacklistAlert_info . "' WHERE uid='" . $id . "' OR as_uid='" . $id . "'");
   } else {
     //bl View für alle!
-    $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "' WHERE uid=" . $id . " OR as_uid=" . $id . "");
+    $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "' WHERE uid='" . $id . "' OR as_uid='" . $id . "'");
     //bl info nur für aktuellen Charakter speichern
-    $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_info='" . $blacklistAlert_info . "', bl_mail=" . $blacklistAlert_mail . " WHERE uid=" . $this_user . "");
+    $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_info='" . $blacklistAlert_info . "', bl_mail='" . $blacklistAlert_mail . "' WHERE uid='" . $this_user . "'");
   }
 
-  $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_ice='" . $blacklistAlert_ice . "' WHERE uid=" . $this_user . "");
+  $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_ice='" . $blacklistAlert_ice . "' WHERE uid='" . $this_user . "'");
 }
 
 $plugins->add_hook("member_profile_start", "blacklistAlert_viewOnIce");
