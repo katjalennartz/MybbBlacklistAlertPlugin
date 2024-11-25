@@ -710,6 +710,7 @@ function blacklistAlert_alert()
       }
 
       $today = time();
+      $mybb->input['action'] = $mybb->get_input("action");
       if (($mybb->input['action'] == "hide")) {
         if (isset($_GET['id'])) {
           $id = intval($_GET['id']);
