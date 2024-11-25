@@ -514,23 +514,37 @@ function get_allchars($this_user, $as_uid, $ice)
   global $db, $mybb, $hauptchar;
   //mit Hauptaccount online/oder keine angehangenen
   // suche alle angehangenen accounts
-  if ($as_uid == 0) {
+  if (!$db->field_exists("as_uid", "users")) {
+
     $hauptchar = $this_user;
     $get_all_uids = $db->query("SELECT uid,username,usergroup FROM " . TABLE_PREFIX . "users WHERE 
-      bl_info= 1 
+        bl_info= 1 
+          " . $ice . " 
+           AND uid='$this_user'");
+
+    //ergebnis querie zurückgeben
+  } else {
+    if ($as_uid == 0) {
+      $hauptchar = $this_user;
+      $get_all_uids = $db->query("SELECT uid,username,usergroup FROM " . TABLE_PREFIX . "users WHERE 
+        bl_info= 1 
+          " . $ice . " 
+           AND ((as_uid='$this_user') OR (uid='$this_user')) ORDER BY username");
+    } else if ($as_uid != 0) { //nicht mit Hauptaccoung online
+      //id des users holen wo alle angehangen sind + alle charas
+      $hauptchar = $as_uid;
+      $get_all_uids = $db->query("SELECT uid,username,usergroup FROM " . TABLE_PREFIX . "users WHERE
+        bl_info = 1 
         " . $ice . " 
-         AND ((as_uid=$this_user) OR (uid=$this_user)) ORDER BY username");
-  } else if ($as_uid != 0) { //nicht mit Hauptaccoung online
-    //id des users holen wo alle angehangen sind + alle charas
-    $hauptchar = $as_uid;
-    $get_all_uids = $db->query("SELECT uid,username,usergroup FROM " . TABLE_PREFIX . "users WHERE
-      bl_info = 1 
-      " . $ice . " 
-      AND 
-      ((as_uid=$as_uid) OR (uid=$this_user) OR (uid=$as_uid)) 
-      ORDER BY username");
+        AND 
+        ((as_uid=$as_uid) OR (uid='$this_user') OR (uid='$as_uid')) 
+        ORDER BY username");
+    }
+    //ergebnis querie zurückgeben
+
+
   }
-  //ergebnis querie zurückgeben
+
   return $get_all_uids;
 }
 
@@ -640,8 +654,8 @@ function blacklistAlert_alert()
 
         //Charakter in der Bewerbung?    
         if ($usergroup == $opt_bl_bewerbergruppe) {
-          $get_bewerbermeldung = 
-          $db->query("SELECT grp.username, grp.uid, grp.regdate, habenposts.dateline, tid, subject FROM (SELECT * FROM " . TABLE_PREFIX . "users WHERE usergroup = '" . $opt_bl_bewerbergruppe . "') as grp left JOIN 
+          $get_bewerbermeldung =
+            $db->query("SELECT grp.username, grp.uid, grp.regdate, habenposts.dateline, tid, subject FROM (SELECT * FROM " . TABLE_PREFIX . "users WHERE usergroup = '" . $opt_bl_bewerbergruppe . "') as grp left JOIN 
 (SELECT username,dateline,max(tid) tid,fid,uid, subject FROM " . TABLE_PREFIX . "threads thread
   INNER JOIN 
              (SELECT fid as fff FROM " . TABLE_PREFIX . "forums as f WHERE concat(',',parentlist,',') LIKE '%," . $opt_bl_bewerberfid . ",%') as fids
@@ -818,11 +832,18 @@ function blacklistAlert_edit_profile_do()
     //Ja, alle raussuchen
     //speichern
     //für alle
-    $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "', bl_info='" . $blacklistAlert_info . "' WHERE uid='" . $id . "' OR as_uid='" . $id . "'");
+    if (!$db->field_exists("as_uid", "users")) {
+      $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "', bl_info='" . $blacklistAlert_info . "' WHERE uid='" . $id . "'");
+    } else {
+      $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "', bl_info='" . $blacklistAlert_info . "' WHERE uid='" . $id . "' OR as_uid='" . $id . "'");
+    }
   } else {
     //bl View für alle!
-    $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "' WHERE uid='" . $id . "' OR as_uid='" . $id . "'");
-    //bl info nur für aktuellen Charakter speichern
+    if (!$db->field_exists("as_uid", "users")) {
+      $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "' WHERE uid='" . $id . "'");
+    } else {
+      $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_view='" . $blacklistAlert_view . "' WHERE uid='" . $id . "' OR as_uid='" . $id . "'");
+    }    //bl info nur für aktuellen Charakter speichern
     $db->query("UPDATE " . TABLE_PREFIX . "users SET bl_info='" . $blacklistAlert_info . "', bl_mail='" . $blacklistAlert_mail . "' WHERE uid='" . $this_user . "'");
   }
 
